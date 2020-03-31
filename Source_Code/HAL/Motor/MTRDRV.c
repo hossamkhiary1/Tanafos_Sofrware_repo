@@ -2,10 +2,38 @@
 #include "Pwm.h"
 
 void MTRDRV_Init(void)
-{}
-void MTRDRV_SetDirection(MotorDirectionType Direction)
-{}
-void MTRDRV_SetSpeed(unsigned long int RotPerMin)
-{}
-void MTRDRV_Stop(void)
-{}
+{
+	unsigned char i;
+	for(i = 0 ; i < MTR_NUM_OF_MOTORS ; i++)
+	{
+		MTRDRV_Stop(BUT_ConfigParam[i]);
+	}
+	
+}
+MTRDRV_SetDirection(unsigned char Motor_Index, MotorDirectionType Direction)
+{
+	switch(Direction)
+	{
+		case DIR_FWD:
+				DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN1, HIGH);
+				DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN2, LOW);
+				break;
+		case DIR_REV:
+				DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN1, LOW);
+				DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN2, HIGH);
+				break;
+	}
+	
+	
+}
+ MTRDRV_SetSpeed(unsigned char Motor_Index, unsigned long int RotPerMin)
+{
+	PWM_SetDutyCycle(BUT_ConfigParam[Motor_Index].ChannelId_EN, GET_DUTY_CYCLE_FROM_RPM(RotPerMin));
+}
+MTRDRV_Stop(unsigned char Motor_Index);
+{
+	DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN1, LOW);
+	DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN2, LOW);
+	PWM_SetDutyCycle(BUT_ConfigParam[Motor_Index].ChannelId_EN, LOW);
+}
+
