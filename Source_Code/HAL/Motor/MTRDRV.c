@@ -6,7 +6,7 @@ void MTRDRV_Init(void)
 	unsigned char i;
 	for(i = 0 ; i < MTR_NUM_OF_MOTORS ; i++)
 	{
-		MTRDRV_Stop(BUT_ConfigParam[i]);
+		MTRDRV_Stop(i);
 	}
 	
 }
