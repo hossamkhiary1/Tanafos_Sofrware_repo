@@ -10,7 +10,7 @@ void MTRDRV_Init(void)
 	}
 	
 }
-MTRDRV_SetDirection(unsigned char Motor_Index, MotorDirectionType Direction)
+void MTRDRV_SetDirection(unsigned char Motor_Index, MotorDirectionType Direction)
 {
 	switch(Direction)
 	{
@@ -26,11 +26,11 @@ MTRDRV_SetDirection(unsigned char Motor_Index, MotorDirectionType Direction)
 	
 	
 }
- MTRDRV_SetSpeed(unsigned char Motor_Index, unsigned long int RotPerMin)
+void MTRDRV_SetSpeed(unsigned char Motor_Index, unsigned long int RotPerMin)
 {
 	PWM_SetDutyCycle(BUT_ConfigParam[Motor_Index].ChannelId_EN, GET_DUTY_CYCLE_FROM_RPM(RotPerMin));
 }
-MTRDRV_Stop(unsigned char Motor_Index);
+void MTRDRV_Stop(unsigned char Motor_Index);
 {
 	DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN1, LOW);
 	DIO_Write(BUT_ConfigParam[Motor_Index].DioGroupId_IN2, LOW);
