@@ -4,9 +4,8 @@ typedef enum {DIR_FWD, DIR_REV} MotorDirectionType;
 typedef enum {LOW, HIGH} Level;
 typedef struct 
 {
-	unsigned char DioGroupId_IN1;
-	unsigned char DioGroupId_IN2;
-	unsigned char ChannelId_EN;
+	unsigned char DioGroupId_DIR;
+	unsigned char ChannelId_PWM;
 }MTRConfigType;
 void MTRDRV_Init(void);
 void MTRDRV_SetDirection(unsigned char Motor_Index, MotorDirectionType Direction);
