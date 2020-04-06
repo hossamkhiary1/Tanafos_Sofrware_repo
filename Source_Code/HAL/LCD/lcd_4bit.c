@@ -1,14 +1,17 @@
 /**
 * @file LCD_Driver_4bit_MODE.c
-* @brief 4 bit mode lcd driver for ATMEGA16 or 32 .  
+* @brief 4 bit mode lcd driver for ATMEGA16 or 32 .
 * @author Islam Mohamed.
 */
 
 #include"lcd_4bit.h"
+#include "LCD_Cfg.h"
+#include "DIO.h"
 #include "macros.h"
 #include <avr/io.h>
+#define F_CPU 8000000ul
 #include <util/delay.h>
-
+static void WriteNipple(unsigned char Nipple);
 /////////////////////////////////////////////////////////////////////
 //	lcd enable triggering function to make lcd aware about command or
 //   data changes.
@@ -16,55 +19,52 @@
 void enableTrigger(void)
 {
 
-	CLR_BIT(PORTB,2);
-	
-	_delay_ms(1);
 
-	SET_BIT(PORTB,2);
-	_delay_ms(6);
+
+	DIO_Write(LCD_EN,0xff);
+	_delay_us(100);
+	DIO_Write(LCD_EN,0x00);
+	_delay_us(100);
 
 
 }
 ///////////////////////////////////////////////////////////////////////////////////////
-// LCD initialization API : set portB from pinB.4 to pinB.7 as o/p for data and commands 
-//							 and pinB.0 to pinB.2 o/p for control pins 
+// LCD initialization API : set portB from pinB.4 to pinB.7 as o/p for data and commands
+//							 and pinB.0 to pinB.2 o/p for control pins
 //////////////////////////////////////////////////////////////////////////////////////
 void lcd_init(void)
 {
 
-	DDRB=0xff; // init port B as O/P port 
-	PORTB=0x04; // activate LCD enable 
 
-	lcd_sendCommand(0x33); // 4-bit mode 
+
+	lcd_sendCommand(0x33); // 4-bit mode
 	lcd_sendCommand (0x32);
 	lcd_sendCommand (0x28);
 
 
 
-	lcd_sendCommand(0x0c); // turn on lcd 
+	lcd_sendCommand(0x0c); // turn on lcd
 
-		
+	
 }
 
 
 void lcd_sendCommand(unsigned char cmd)
 {
 
-	unsigned char high_nibble , low_nibble ; 		
+	unsigned char high_nibble , low_nibble ;
 	
 	HIGH_NIBBLE(high_nibble,cmd);
 	LOW_NIBBLE(low_nibble,cmd);
 
-	CLR_BIT(PORTB,0); // to enable command mode 
-	CLR_BIT(PORTB,1); // write signal to lcd 
+	DIO_Write(LCD_RS,0x00);
+	DIO_Write(LCD_WR,0x00);
 
-	PORTB &=0x0f;
-	PORTB |=high_nibble;// to send high nibble command  
-	enableTrigger(); // triggre lcd enable 
-
-	PORTB &=0x0f;
-	PORTB |=low_nibble; // to send low nibble command 
+	WriteNipple(high_nibble >> 4);
+	enableTrigger(); // triggre lcd enable
+	WriteNipple(low_nibble);
 	enableTrigger();
+	_delay_ms(2);
 
 }
 
@@ -73,18 +73,18 @@ void lcd_displayChar (unsigned char data)
 
 	unsigned char high_nibble , low_nibble ;
 
-	SET_BIT(PORTB,0); //  enable data mode 
-	CLR_BIT(PORTB,1); // activate lcd write 
 
-	HIGH_NIBBLE(high_nibble,data); // get high nibble data 
-	LOW_NIBBLE(low_nibble,data); // get low nibble data 
+
+	HIGH_NIBBLE(high_nibble,data); // get high nibble data
+	LOW_NIBBLE(low_nibble,data); // get low nibble data
 	
-	PORTB &= 0x0f;
-	PORTB |=high_nibble;// to send high nibble data  
-	enableTrigger(); // triggre lcd enable 
-	
-	PORTB &=0x0f;
-	PORTB |=low_nibble; // to send low nibble data 
+	DIO_Write(LCD_RS,0xff);
+	DIO_Write(LCD_WR,0x00);
+
+	WriteNipple(high_nibble >> 4);
+	enableTrigger(); // triggre lcd enable
+
+	WriteNipple(low_nibble);
 	enableTrigger();
 	
 
@@ -94,36 +94,36 @@ void lcd_displayChar (unsigned char data)
 void lcd_gotoxy(unsigned char y , unsigned char x )
 {
 	unsigned char position = 0x80;
-	 
+	
 	switch(y)
 	{
 		case 0:
 
-			position=position+x;
-					
+		position=position+x;
+		
 		break;
 
 		case 1:
 
-			position=0xc0;
-			position=position+x;
+		position=0xc0;
+		position=position+x;
 
 		break;
 
 		case 2:
 
-			position=position+x;
+		position=position+x;
 
 		break;
 
 		case 3:
-			position=position+x;
+		position=position+x;
 		break;
-	
-	
+		
+		
 	}
 	
-	lcd_sendCommand(position); 	
+	lcd_sendCommand(position);
 
 
 }
@@ -145,7 +145,7 @@ void lcd_dispString(char * ptr)
 	{
 		lcd_displayChar(* ptr);
 		ptr++;
-	
+		
 	}
 
 
@@ -161,5 +161,17 @@ void lcd_disp_string_xy(char * ptr , int y , int x)
 	
 
 
+}
+static void WriteNipple(unsigned char Nipple)
+{
+	unsigned char Loop;
+	unsigned char BitValue;
+	unsigned char lut[4] = {LCD_DATA0, LCD_DATA1, LCD_DATA2, LCD_DATA3};
+	for(Loop = 0; Loop < 4; Loop++)
+	{
+		BitValue = (Nipple & (1 << Loop)) >> Loop;
+		BitValue = 0 - BitValue;
+		DIO_Write(lut[Loop],BitValue);
+	}
 }
 

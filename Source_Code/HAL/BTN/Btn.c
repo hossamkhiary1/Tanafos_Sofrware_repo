@@ -1,5 +1,6 @@
 #include "Btn.h"
 #include "Dio.h"
+#include "BTN_Cfg.h"
 static BtnStateType Array_state[BTN_NUM_OF_BUTTONS];
 void BTN_Init(void)
 {
@@ -20,7 +21,7 @@ void BTN_Manager(void)
 {
 	unsigned char i=0;
 	BtnStateType state;
-	unsigned char *DataPtr;
+	unsigned char DataPtr;
 	for(i=0;i<BTN_NUM_OF_BUTTONS ;i++) 					//for all buttons
 	{	
 		state = Array_state[i]; 						//put previous state in state
@@ -31,27 +32,27 @@ void BTN_Manager(void)
 				switch(state)
 				{
 					case BUT_OFF:
-						if((*DataPtr) == HIGH) 				//button is not pressed
+						if((DataPtr) != LOW) 				//button is not pressed
 							state = BUT_OFF;
-						if((*DataPtr) == LOW) 				//button is pressed
+						if((DataPtr) == LOW) 				//button is pressed
 							state = BUT_PRSSED;
 						break;
 					case BUT_PRSSED:
-						if((*DataPtr) == HIGH)				//button is not pressed
+						if((DataPtr) != LOW)				//button is not pressed
 							state = BUT_OFF;
-						if((*DataPtr) == LOW) 				//button is pressed
+						if((DataPtr) == LOW) 				//button is pressed
 							state = BUT_ON;
 						break;
 					case BUT_ON:
-						if((*DataPtr) == HIGH) 				//button is not pressed
+						if((DataPtr) != LOW) 				//button is not pressed
 							state = BUT_RELEASED;
-						if((*DataPtr) == LOW)  				//button is pressed
+						if((DataPtr) == LOW)  				//button is pressed
 							state = BUT_ON;
 						break;
 					case BUT_RELEASED:
-						if((*DataPtr) == HIGH)				//button is not pressed
+						if((DataPtr) != LOW)				//button is not pressed
 							state = BUT_OFF;
-						if(((*DataPtr) == LOW)  				//button is pressed
+						if((DataPtr) == LOW)  				//button is pressed
 							state = BUT_ON;
 						break;	
 				}
@@ -61,27 +62,27 @@ void BTN_Manager(void)
 				switch(state)
 				{
 					case BUT_OFF:
-						if((*DataPtr) == LOW)  				//button is not pressed
+						if((DataPtr) == LOW)  				//button is not pressed
 							state = BUT_OFF;
-						if((*DataPtr) == HIGH) 				//button is pressed
+						  else
 							state = BUT_PRSSED;
 						break;
 					case BUT_PRSSED:
-						if((*DataPtr) == LOW)  				//button is not pressed
+						if((DataPtr) == LOW)  				//button is not pressed
 							state = BUT_OFF;
-						if((*DataPtr) == HIGH)				//button is pressed
+						else			//button is pressed
 							state = BUT_ON;
 						break;
 					case BUT_ON:
-						if((*DataPtr) == LOW) 				//button is not pressed
+						if((DataPtr) == LOW) 				//button is not pressed
 							state = BUT_RELEASED;
-						if((*DataPtr) == HIGH)				//button is pressed
+				        else
 							state = BUT_ON;
 						break;
 					case BUT_RELEASED:
-						if((*DataPtr) == LOW)  				//button is not pressed
+						if((DataPtr) == LOW)  				//button is not pressed
 							state = BUT_OFF;
-						if((*DataPtr) == HIGH)				//button is pressed
+						else
 							state = BUT_ON;
 						break;	
 				}

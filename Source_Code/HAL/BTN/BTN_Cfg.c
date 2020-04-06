@@ -4,7 +4,7 @@
 const BtnConfigType BUT_ConfigParam[BTN_NUM_OF_BUTTONS] = 
 {
 	{
-		0x00,
-		0x00
+		0x02,
+		0x01
 	}
 };
