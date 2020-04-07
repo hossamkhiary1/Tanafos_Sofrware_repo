@@ -6,6 +6,7 @@ typedef struct
 {
 	unsigned char DioGroupId_DIR;
 	unsigned char ChannelId_PWM;
+	unsigned long int Motor_Frequency;
 }MTRConfigType;
 void MTRDRV_Init(void);
 void MTRDRV_SetDirection(unsigned char Motor_Index, MotorDirectionType Direction);
