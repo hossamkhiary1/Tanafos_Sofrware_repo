@@ -1,0 +1,10 @@
+#include "USD.h"
+#include "USD_CFG.h"
+#include "DIO.h"
+#include "ICU.h"
+void USD_Init(void){}
+void USD_StartMeasurement(void){}
+void USD_StopMeasurement(void){}
+USD_DistanceResultType USD_GetLastDistance(void){}
+void USD_Main(void){}
+void USD_EchoDetectedNotifCbk(void){}
