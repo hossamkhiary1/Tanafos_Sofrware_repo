@@ -2,7 +2,7 @@
 #include "DIO_Cfg.h"
 #include "M4MemMap.h"
 #include <stdint.h>
-typedef volatile uint32_t* const DIO_RegAddType;
+typedef volatile uint32_t *const DIO_RegAddType;
 #define PORTS_NUMBER 6u
 /*Register memory map*/
 #define PORTA_BASE_ADDRESS 0x40004000
@@ -11,14 +11,12 @@ typedef volatile uint32_t* const DIO_RegAddType;
 #define PORTD_BASE_ADDRESS 0x40007000
 #define PORTE_BASE_ADDRESS 0x40024000
 #define PORTF_BASE_ADDRESS 0x40025000
-static const uint32_t PortsBaseAddressLut[PORTS_NUMBER] =
-{       PORTA_BASE_ADDRESS,
-	PORTB_BASE_ADDRESS,
-	PORTC_BASE_ADDRESS,
-	PORTD_BASE_ADDRESS,
-	PORTE_BASE_ADDRESS,
-	PORTF_BASE_ADDRESS
-};
+static const uint32_t PortsBaseAddressLut[PORTS_NUMBER] = { PORTA_BASE_ADDRESS,
+PORTB_BASE_ADDRESS,
+                                                            PORTC_BASE_ADDRESS,
+                                                            PORTD_BASE_ADDRESS,
+                                                            PORTE_BASE_ADDRESS,
+                                                            PORTF_BASE_ADDRESS };
 #define DIO_REG_ADDRESS(CHANNEL_ID,REG_OFFSET)\
 (PortsBaseAddressLut[CHANNEL_ID] + REG_OFFSET)
 
@@ -66,107 +64,148 @@ static const uint32_t PortsBaseAddressLut[PORTS_NUMBER] =
 #define DIO_INT_BE_BIT_NUM 2
 #define DIO_INT_BR_MASK (1 << DIO_INT_BE_BIT_NUM)
 
-static uint8_t DIO_GroupState[DIO_GROUPS_NUMBER] = {0};
+static uint8_t DIO_GroupState[DIO_GROUPS_NUMBER] = { 0 };
 
 /*A function to initialize all the GPIO Groups in the configurations*/
 DIO_CheckType DIO_Init(void)
 {
-	uint8_t LoopIndex;
-	uint8_t ErrorFlag = 0;
-	DIO_CheckType RetVar;
-	const DIO_CfgType * CfgPtr;
+    uint8_t LoopIndex;
+    uint8_t ErrorFlag = 0;
+    DIO_CheckType RetVar;
+    const DIO_CfgType *CfgPtr;
 
+    for (LoopIndex = 0; (LoopIndex < DIO_GROUPS_NUMBER) && (ErrorFlag == 0);
+            LoopIndex++)
+    {
+        if (DIO_ConfigParam[LoopIndex].PortId < PORTS_NUMBER)
+        {
 
-	for(LoopIndex = 0; (LoopIndex < DIO_GROUPS_NUMBER) && (ErrorFlag == 0); LoopIndex ++)
-	{
-		if(DIO_ConfigParam[LoopIndex].PortId < PORTS_NUMBER)
-		{
+            /*Enable port clock gate*/
+            CfgPtr = &DIO_ConfigParam[LoopIndex];
+            RCGCGPIO_REG |= 1 << CfgPtr->PortId;
+            /*Unlock the group*/
+            GPIOLOCK_REG(CfgPtr->PortId) = DIO_PORT_UNLOCK_VALUE;
+            GPIOCR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask);
+            /*Data Control*/
+            GPIODIR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->PortDirection);
+            /*Pad Control*/
+            GPIODR2R_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->Use2mACrt);
+            GPIODR4R_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->Use4mACrt);
+            GPIODR8R_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->Use8mACrt);
 
+            GPIOPDR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->UsePullDown);
+            GPIOPUR_REG(CfgPtr->PortId) |=
+                    (CfgPtr->PortMask & CfgPtr->UsePullUp);
+            GPIOODR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->UseOpenDrain);
 
-			/*Enable port clock gate*/
-			CfgPtr = & DIO_ConfigParam[LoopIndex];
-			RCGCGPIO_REG |= 1 << CfgPtr->PortId;
-			/*Unlock the group*/
-			GPIOLOCK_REG(CfgPtr->PortId) = DIO_PORT_UNLOCK_VALUE;
-			GPIOCR_REG(CfgPtr->PortId)  |= (CfgPtr->PortMask);
-			/*Data Control*/
-			GPIODIR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->PortDirection);
-			/*Pad Control*/
-			GPIODR2R_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->Use2mACrt);
-			GPIODR4R_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->Use4mACrt);
-			GPIODR8R_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->Use8mACrt);
+            GPIODEN_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->SetPinType);
+            GPIOAMSEL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & ~CfgPtr->SetPinType);
 
-			GPIOPDR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->UsePullDown);
-			GPIOPUR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->UsePullUp);
-			GPIOODR_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->UseOpenDrain);
+            /*Mode control*/
+            GPIOAFSEL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->UseAlterFun);
+            GPIOADCCTL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->UseACDTrig);
+            GPIODMACTL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask
+                    & CfgPtr->UseDMATrig);
+            DIO_GroupState[LoopIndex] = 1;
+            RetVar = DIO_OK;
+        }
+        else
+        {
+            /*Invalid GroupId*/
+            RetVar = DIO_NOK;
+            ErrorFlag = 1;
+        }
 
-			GPIODEN_REG(CfgPtr->PortId)   |= (CfgPtr->PortMask & CfgPtr->SetPinType);
-			GPIOAMSEL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & ~CfgPtr->SetPinType);
-
-			/*Mode control*/
-			GPIOAFSEL_REG(CfgPtr->PortId)  |= (CfgPtr->PortMask & CfgPtr->UseAlterFun);
-			GPIOADCCTL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->UseACDTrig);
-			GPIODMACTL_REG(CfgPtr->PortId) |= (CfgPtr->PortMask & CfgPtr->UseDMATrig);
-			DIO_GroupState[LoopIndex] = 1;
-			RetVar = DIO_OK;
-		}
-		else
-		{
-			/*Invalid GroupId*/
-			RetVar = DIO_NOK;
-			ErrorFlag = 1;
-		}
-
-
-	}
-	return RetVar;
+    }
+    return RetVar;
 }
-
 
 /*A function to Digital Write data to a specific group*/
-DIO_CheckType DIO_Write(uint8_t GroupId,uint8_t GroupData)
+DIO_CheckType DIO_Write(uint8_t GroupId, uint8_t GroupData)
 {
-	const DIO_CfgType * CfgWrhit;
-	DIO_CheckType RetVar;
+    const DIO_CfgType *CfgWrhit;
+    DIO_CheckType RetVar;
 
-	if (( GroupId <DIO_GROUPS_NUMBER))
-	{
+    if ((GroupId < DIO_GROUPS_NUMBER))
+    {
 
-		CfgWrhit =  & DIO_ConfigParam[GroupId];
+        CfgWrhit = &DIO_ConfigParam[GroupId];
 
-		if ((CfgWrhit->PortDirection == 0xff)&&(CfgWrhit->SetPinType == 0xff)&&(CfgWrhit->UseAlterFun==0x00) &&(DIO_GroupState[GroupId]==1 ))
-		{
+        if ((CfgWrhit->PortDirection != 0x00) && (CfgWrhit->SetPinType != 0x00)
+                && (CfgWrhit->UseAlterFun == 0x00)
+                && (DIO_GroupState[GroupId] == 1))
+        {
 
-		GPIODATA_WRITE(GroupData,CfgWrhit->PortMask,CfgWrhit->PortId);
-		RetVar = DIO_OK ;
+            GPIODATA_WRITE(GroupData, CfgWrhit->PortMask, CfgWrhit->PortId);
+            RetVar = DIO_OK;
 
-	    }else {RetVar = DIO_NOK ; }
+        }
+        else
+        {
+            RetVar = DIO_NOK;
+        }
 
-	}else {RetVar = DIO_NOK ; }
+    }
+    else
+    {
+        RetVar = DIO_NOK;
+    }
 
-	return RetVar;
+    return RetVar;
 }
 
-
-
-
 /*A function to Digital read data from a specific group*/
-DIO_CheckType DIO_Read(uint8_t GroupId,uint8_t* GroupDataPtr)
+DIO_CheckType DIO_Read(uint8_t GroupId, uint8_t *GroupDataPtr)
 {
+    const DIO_CfgType *CfgWrhit;
+    DIO_CheckType RetVar;
 
+    if ((GroupId < DIO_GROUPS_NUMBER))
+    {
 
-		}
+        CfgWrhit = &DIO_ConfigParam[GroupId];
 
+        if ((CfgWrhit->PortDirection == 0x00) && (CfgWrhit->SetPinType != 0x00)
+                && (CfgWrhit->UseAlterFun == 0x00)
+                && (DIO_GroupState[GroupId] == 1))
+        {
 
+            *GroupDataPtr = GPIODATA_READ(CfgWrhit->PortMask, CfgWrhit->PortId);
+            RetVar = DIO_OK;
 
+        }
+        else
+        {
+            RetVar = DIO_NOK;
+        }
+
+    }
+    else
+    {
+        RetVar = DIO_NOK;
+    }
+
+    return RetVar;
+}
 
 /*A function to select which peripheral will be connected to a GPIO pin*/
-DIO_CheckType DIO_SetAlternFuntion(uint8_t GroupId,uint8_t AlternFuncId)
+DIO_CheckType DIO_SetAlternFuntion(uint8_t GroupId, uint8_t AlternFuncId)
 {
 
 }
 /*A function to Select the interrupt event for a specific GPIO Group*/
-DIO_CheckType DIO_SetInterruptEvent(uint8_t GroupId,DIO_IntEventType IntEvent,DIO_IntMaskStatus IntMaskStatus)
+DIO_CheckType DIO_SetInterruptEvent(uint8_t GroupId, DIO_IntEventType IntEvent,
+                                    DIO_IntMaskStatus IntMaskStatus)
 {
 
 }
@@ -176,7 +215,8 @@ DIO_CheckType DIO_ClrInterruptFlag(uint8_t GroupId)
 
 }
 /*A function to Get a specific pin interrupt status*/
-DIO_CheckType DIO_GetInterruptStatus(uint8_t GroupId,DIO_IntStatus *IntStatusPtr)
+DIO_CheckType DIO_GetInterruptStatus(uint8_t GroupId,
+                                     DIO_IntStatus *IntStatusPtr)
 {
 
 }
