@@ -1,24 +1,72 @@
 #include "DIO.h"
 #include "DIO_Cfg.h"
-const DIO_CfgType DIO_ConfigParam[DIO_GROUPS_NUMBER] = { { 0x05, 1 << 1, 0, 0,
-                                                           0, 0xff, 0x00, 0xff,
-                                                           0x00, 0xff, 0x00,
-                                                           0x00, 0xff, 0
+const DIO_CfgType DIO_ConfigParam[DIO_GROUPS_NUMBER] =
+{
+    {   0x01, 1 << 5, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
 
-},
-                                                         {
+    },
+    {
 
-                                                         0x05,
-                                                           1 << 0, 0, 0, 0,
-                                                           0x00, 0xff, 0x00,
-                                                           0x00, 0x00, 0x00,
-                                                           0x00, 0xff, 0
+        0x05,
+        1 << 0, 0, 0, 0,
+        0x00, 0xff, 0x00,
+        0x00, 0x00, 0x00,
+        0x00, 0xff, 0
 
-                                                         },
+    },
 
-                                                         { 0x05, 1 << 4, 0, 0,
-                                                           0, 0x00, 0xff, 0x00,
-                                                           0x00, 0x00, 0x00,
-                                                           0x00, 0xff, 0 }
+    {   0x05, 1 << 4, 0, 0,
+        0, 0x00, 0xff, 0x00,
+        0x00, 0x00, 0x00,
+        0x00, 0xff, 0
+    },
+    {   0x00, 1 << 2, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    },
+
+    {   0x00, 1 << 3, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    },
+
+    {   0x00, 1 << 4, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    },
+    {   0x02, 1 << 4, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    },
+
+    {   0x02, 1 << 5, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    },
+    {   0x02, 1 << 6, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    },
+    {   0x02, 1 << 7, 0, 0,
+        0, 0xff, 0x00, 0xff,
+        0x00, 0xff, 0x00,
+        0x00, 0xff, 0
+
+    }
 
 };

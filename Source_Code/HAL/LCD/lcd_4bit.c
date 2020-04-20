@@ -8,10 +8,11 @@
 #include "LCD_Cfg.h"
 #include "DIO.h"
 #include "macros.h"
-#include <avr/io.h>
-#define F_CPU 8000000ul
-#include <util/delay.h>
+
+
+
 static void WriteNipple(unsigned char Nipple);
+static void _delay_us(unsigned long int Count);
 /////////////////////////////////////////////////////////////////////
 //	lcd enable triggering function to make lcd aware about command or
 //   data changes.
@@ -22,9 +23,9 @@ void enableTrigger(void)
 
 
 	DIO_Write(LCD_EN,0xff);
-	_delay_us(100);
+	_delay_us(10);
 	DIO_Write(LCD_EN,0x00);
-	_delay_us(100);
+	_delay_us(10);
 
 
 }
@@ -60,11 +61,11 @@ void lcd_sendCommand(unsigned char cmd)
 	DIO_Write(LCD_RS,0x00);
 	DIO_Write(LCD_WR,0x00);
 
-	WriteNipple(high_nibble >> 4);
+	WriteNipple(high_nibble);
 	enableTrigger(); // triggre lcd enable
 	WriteNipple(low_nibble);
 	enableTrigger();
-	_delay_ms(2);
+	_delay_us(2000);
 
 }
 
@@ -81,11 +82,12 @@ void lcd_displayChar (unsigned char data)
 	DIO_Write(LCD_RS,0xff);
 	DIO_Write(LCD_WR,0x00);
 
-	WriteNipple(high_nibble >> 4);
+	WriteNipple(high_nibble);
 	enableTrigger(); // triggre lcd enable
 
 	WriteNipple(low_nibble);
 	enableTrigger();
+	_delay_us(10);
 	
 
 }
@@ -175,3 +177,13 @@ static void WriteNipple(unsigned char Nipple)
 	}
 }
 
+static void _delay_us(unsigned long int Count)
+{
+ volatile unsigned long int Loop1;
+ volatile unsigned long int loop2;
+ for(Loop1 = 0; Loop1 < Count; Loop1++)
+ {
+     for(loop2 = 0; loop2 < 4; loop2++);
+ }
+
+}
